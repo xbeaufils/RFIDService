@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:background="@android:color/background_light" android:padding="5dp" android:scrollbars="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="60dp">
+            <Switch android:layout_gravity="center" android:id="@+id/switch_scan" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="20dp" android:layout_marginRight="20dp" android:checked="false" android:text="@string/scan_switch" style="@style/NormalFont"/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="5dp"/>
+        <LinearLayout android:orientation="horizontal" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="40dp">
+            <RadioGroup android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <RadioButton android:id="@+id/radioButton_for_tablet" android:layout_width="0dp" android:layout_height="match_parent" android:checked="true" android:text="For Tablet" android:layout_weight="1"/>
+                <RadioButton android:id="@+id/radioButton_for_pda" android:layout_width="0dp" android:layout_height="match_parent" android:text="For PDA" android:layout_weight="1"/>
+            </RadioGroup>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:visibility="gone" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="5dp"/>
+        <LinearLayout android:orientation="horizontal" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="40dp">
+            <TextView android:id="@+id/textView1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/_dbm_" android:layout_centerVertical="true" style="@style/NormalFont"/>
+            <Button android:id="@+id/button_min" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/_min" android:layout_toRightOf="@+id/textView1" android:layout_centerVertical="true" style="@style/NormalFont"/>
+            <EditText android:id="@+id/editText_power" android:focusable="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignTop="@+id/button_min" style="@style/NormalFont"/>
+            <Button android:id="@+id/button_plus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/_plus" android:layout_alignBottom="@+id/button_min" style="@style/NormalFont"/>
+            <Button android:id="@+id/button_set" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/_set" style="@style/NormalFont"/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="5dp"/>
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="5dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/prefix" style="@style/NormalFont"/>
+            <Spinner android:id="@+id/spinner_prefix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="100dp"/>
+            <TextView android:id="@+id/text_prefix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:layout_weight="1" style="@style/NormalFont"/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="5dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/surfix" style="@style/NormalFont"/>
+            <Spinner android:id="@+id/spinner_surfix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="100dp"/>
+            <TextView android:id="@+id/text_surfix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:layout_weight="1" style="@style/NormalFont"/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
+
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="5dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/circulate" android:layout_weight="1" style="@style/NormalFont"/>
+            <CheckBox android:id="@+id/checkBox_circulate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=""/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
+        <LinearLayout android:orientation="horizontal" android:focusableInTouchMode="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="5dp">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:text="@string/circulatetime" android:layout_weight="1" style="@style/NormalFont"/>
+            <EditText android:id="@+id/editText_circulatetime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10" android:hint="10" android:digits="1234567890"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/s" style="@style/NormalFont"/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="5dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/repeat" android:layout_weight="1" style="@style/NormalFont"/>
+            <CheckBox android:id="@+id/checkBox_repeat" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=""/>
+        </LinearLayout>
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
+
+        <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
+        <LinearLayout android:orientation="horizontal" android:background="@drawable/corners_background" android:padding="3dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="5dp">
+
+            <TextView
+                android:id="@+id/textViewData"
+                style="@style/NormalFont"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:text="" />
+
+            <Button
+                android:id="@+id/button_read"
+                style="@style/NormalFont"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/_read" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

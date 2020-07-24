@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Rfid Service</string>
+    <string name="scan_switch">Switch</string>
+    <string name="prefix">prefix:</string>
+    <string name="surfix">suffix:</string>
+    <string name="voice">voice:</string>
+    <string name="scan_key_setting">Key Setting:</string>
+    <string name="f1">F1:</string>
+    <string name="f2">F2:</string>
+    <string name="f3">Left Button:</string>
+    <string name="f4">Handler Button:</string>
+    <string name="f5">Rigth Button:</string>
+    <string name="tab">Tab</string>
+    <string name="space">Space</string>
+    <string name="enter">Enter</string>
+    <string name="none">None</string>
+    <string name="other">Other</string>
+    <string name="user_char">Input</string>
+    <string name="ok">Sure</string>
+    <string name="cancel">Cancel</string>
+    <string name="circulate">Circulate:</string>
+    <string name="repeat">Repeat:</string>
+    <string name="circulatetime">Circulate Time or TimeOut:</string>
+    <string name="s">s</string>
+    <string name="_dbm_">Power(dBm):</string>
+    <string name="_min">Min</string>
+    <string name="_read">Read</string>
+    <string name="_plus">Plus</string>
+    <string name="_set">Set</string>
+    <string name="_setsuccess">Set Success!\10Please Reopen UHF Service!</string>
+    <string name="_setfail">Set Fail!</string>
+</resources>
