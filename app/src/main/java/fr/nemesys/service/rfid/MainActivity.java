@@ -97,26 +97,27 @@ import java.util.TimerTask;
         private void SetScreenReceiver() {
             IntentFilter mFilter = new IntentFilter();
             mFilter.addAction("android.intent.action.SCREEN_OFF");
-            mFilter.addAction("android.intent.action.SCREEN_ON");
+            mFilter.addAction("android.rfid.INPUT");
+            registerReceiver(this.boucleReceiver, mFilter);
+        }
+
+        private void setBoucleReceiver() {
+            IntentFilter mFilter = new IntentFilter();
+            mFilter.addAction("android.rfid.INPUT");
             registerReceiver(this.boucleReceiver, mFilter);
         }
 
         private BroadcastReceiver boucleReceiver = new BroadcastReceiver() {
             public void onReceive(Context arg0, Intent intent) {
                 String action = intent.getAction();
-                if (action.equals("android.intent.action.SCREEN_ON")) {
-                    if (RFIDService.rfidThread == null) {
-                        try {
-                            RFIDService.rfidThread = new RFIDThread(RFIDService.this.handler, RFIDService.this);
-                            RFIDService.rfidThread.start();
-                            Log.i("KeyReceiver", "ScanThread start");
-                        } catch (Exception e) {
-                            Log.i("KeyReceiver", "ScanThread error");
-                        }
+                if (action.equals("android.rfid.INPUT")) {
+                    Bundle extras = intent.getExtras();
+                    if (extras != null) {
+                        String data = extras.getString("data");
+                        Log.d("boucleReceiver", data);
+                        boolean enterFlag = extras.getBoolean("enter");
+                        Log.d("boucleReceiver", String.valueOf(enterFlag));
                     }
-                } else if ("android.intent.action.SCREEN_OFF".equals(action) && RFIDService.rfidThread != null) {
-                    RFIDService.rfidThread.close();
-                    RFIDService.rfidThread = null;
                 }
             }
         };
@@ -139,6 +140,7 @@ import java.util.TimerTask;
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
+
         }
 
         private void setTimer() {
@@ -267,12 +269,15 @@ import java.util.TimerTask;
                        }
                    }, 2000);
                    return;
+                   /*
                    Intent toKill = new Intent();
                    toKill.setAction("android.rfid.KILL_SERVER");
                    toKill.putExtra("kill", true);
                    MainActivity.this.sendBroadcast(toKill);
                    MainActivity.this.scanConfig.setOpen(false);
                    RFIDService.Close();
+
+                    */
                }
             });
             initView2();
@@ -314,6 +319,7 @@ import java.util.TimerTask;
             });
             this.value = this.scanConfig.getPower();
             this.editValues.setText(new StringBuilder().append(this.value).toString());
+            this.setBoucleReceiver();
         }
 
         /* access modifiers changed from: private */

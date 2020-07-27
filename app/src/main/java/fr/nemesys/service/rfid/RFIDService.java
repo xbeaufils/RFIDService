@@ -63,12 +63,14 @@ public class RFIDService extends Service {
     private BroadcastReceiver killReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             if (intent.getBooleanExtra("kill2", false)) {
+                Log.d(TAG, "killReceiver" );
                 RFIDService.this.stopSelf();
             }
         }
     };
     private BroadcastReceiver mScreenReceiver = new BroadcastReceiver() {
         public void onReceive(Context arg0, Intent intent) {
+            Log.d(TAG, "mScreenReceiver" );
             String action = intent.getAction();
             if (action.equals("android.intent.action.SCREEN_ON")) {
                 if (RFIDService.rfidThread == null) {

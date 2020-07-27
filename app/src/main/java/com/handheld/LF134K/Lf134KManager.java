@@ -105,9 +105,9 @@ public class Lf134KManager {
 	}
 
 	public Lf134kDataModel GetData(int timeout) {
-		Log.d(TAG, "GetData");
 		if (mInputStream == null) return null;
-		
+		//Log.d(TAG, "GetData");
+
 		long time = System.currentTimeMillis();
 		int size = 0;
 		int available;
