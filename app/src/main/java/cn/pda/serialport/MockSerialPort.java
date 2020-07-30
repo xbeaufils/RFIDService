@@ -98,8 +98,9 @@ public class MockSerialPort {
 	public InputStream getInputStream() {
 		byte[] initialArray = { 0x02,0x30,0x31,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x43,0x39,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x7B,(byte)0x84,0x03 };
 		//byte[] initialArray = { 0,2,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0,0xF,0xF,0,7};
-		InputStream targetStream = new ByteArrayInputStream(initialArray);
-		return targetStream;
+		//InputStream targetStream = new ByteArrayInputStream(initialArray);
+		//return targetStream;
+		return new MockInputStream(initialArray);
 	}
 
 	public OutputStream getOutputStream() {

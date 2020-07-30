@@ -1,32 +1,42 @@
 package com.handheld.LF134K;
 
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 
 import cn.pda.serialport.MockSerialPort;
 import cn.pda.serialport.SerialPort;
 import cn.pda.serialport.Tools;
+import fr.nemesys.service.rfid.RFIDService;
 
 public class Lf134KManager {
-	public static int Port = 12; //
+	public static int Port = SerialPort.com12; //
 	public static int Power = SerialPort.Power_Rfid;
-	public static int BaudRate = 9600;
-	private static MockSerialPort mSerialPort;//
+	public static int BaudRate = SerialPort.baudrate9600;
+//	private static MockSerialPort mSerialPort;//
+	private static SerialPort mSerialPort;//
 	private static InputStream mInputStream;
 	public static int LF = 1004;
 	private static final String TAG = "Lf134KManager";
+	private RFIDService.RFIDHandler handler;
+
 	/**
 	 * open device
 	 */
-	public Lf134KManager(int PowerArg) throws  IOException {
+	public Lf134KManager(int PowerArg, Handler handler) throws  IOException {
 	//	try {
+		this.handler = ( RFIDService.RFIDHandler) handler;
 		Log.e(TAG, "RFID power is " + PowerArg);
+		this.handler.sendLog(TAG, "RFID power is " + PowerArg);
+		try {
 			Power = PowerArg;
-			//mSerialPort = new SerialPort();
-			mSerialPort = new MockSerialPort(Port, BaudRate, 0);
+			mSerialPort = new SerialPort(Port, BaudRate, 0);
+//			mSerialPort = new MockSerialPort(Port, BaudRate, 0);
 			switch (Power) {
 			case SerialPort.Power_Scaner:
 				mSerialPort.scaner_poweron();
@@ -42,21 +52,21 @@ public class Lf134KManager {
 				break;
 			case SerialPort.Power_Rfid:
 				Log.e(TAG, "RFID power on");
+				this.handler.sendLog(TAG, "RFID power on " );
 				mSerialPort.rfid_poweron();
 				break;
 			}
 			//mSerialPort.rfid_poweron();
 			mInputStream = mSerialPort.getInputStream();
-/*
+
 		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			this.handler.sendLog(TAG, getStackTrace(e) );
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			throw e;
+			this.handler.sendLog(TAG, getStackTrace(e) );
 		}
-*/
+
 	}
 
 	public boolean Close() {
@@ -64,7 +74,7 @@ public class Lf134KManager {
 		try {
 			mInputStream.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			this.handler.sendLog(TAG, getStackTrace(e) );
 			e.printStackTrace();
 			return false;
 		}
@@ -99,7 +109,7 @@ public class Lf134KManager {
 				mInputStream.read(new byte[4906]);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			this.handler.sendLog(TAG, getStackTrace(e) );
 			e.printStackTrace();
 		}
 	}
@@ -117,10 +127,11 @@ public class Lf134KManager {
 				available = mInputStream.available();
 				if (available>=30) {
 					size = mInputStream.read(buffer);
-//					Log.e("size", size+"");
+					//Log.e("size", size+"");
 					break;
 				}
 			} catch (IOException e1) {
+				this.handler.sendLog(TAG, getStackTrace(e1) );
 				e1.printStackTrace();
 			}
 		}
@@ -129,7 +140,7 @@ public class Lf134KManager {
 //		02303030303030303030303030303030303030303030303030303000FF07
 //		000:000000000000
 
-		Log.e("buf", Tools.Bytes2HexString(buffer, size));
+		//Log.e("buf", Tools.Bytes2HexString(buffer, size));
 		if(size>=30 && checkByte(buffer)){
 			Lf134kDataModel model = getData(buffer);
 			return model;
@@ -169,8 +180,8 @@ public class Lf134KManager {
 			model.Reserved = Tools.HexString2Bytes(new String(model.Reserved,"us-ascii"));
 			model.Extend = Tools.HexString2Bytes(new String(model.Extend,"US-ASCII"));
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			this.handler.sendLog(TAG, getStackTrace(e) );
 		}
 		if (buffer[29] == 0x03) {
 			model.Type = "FDX-B";
@@ -213,5 +224,11 @@ public class Lf134KManager {
 		}else {
 			return false;
 		}
+	}
+	private String getStackTrace(Exception e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
 	}
 }

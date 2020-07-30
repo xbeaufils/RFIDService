@@ -16,14 +16,12 @@
 
 package cn.pda.serialport;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 import android.util.Log;
 
@@ -99,18 +97,12 @@ public class SerialPort {
 //		System.load("/data/data/com.example.uartdemo/lib/libdevapi.so");
 //		System.load("/data/data/com.example.uartdemo/lib/libSerialPort.so");
 		mFd = open(port, baudrate);
-		
 		if (mFd == null) {
 			Log.e(TAG, "native open returns null");
 			throw new IOException();
 		}
-		
-		
 		mFileInputStream = new FileInputStream(mFd);
 		mFileOutputStream = new FileOutputStream(mFd);
-		
-
-
 	}
 	// Getters and setters
 	public InputStream getInputStream() {

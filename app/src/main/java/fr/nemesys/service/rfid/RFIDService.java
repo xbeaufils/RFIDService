@@ -6,18 +6,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
-public class RFIDService extends Service {
+import androidx.annotation.NonNull;
+import androidx.core.app.JobIntentService;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+public class RFIDService extends Service  {
     private final IBinder binder = new RFIDBinder();
 
     /* access modifiers changed from: private */
     public static RFIDThread rfidThread = null;
     private String TAG = "RFIDService";
+    public static int LOG = 2020;
     /* access modifiers changed from: private */
     public ScanConfig config;
 
@@ -32,33 +39,36 @@ public class RFIDService extends Service {
         }
     }
     /* access modifiers changed from: private */
-    public Handler handler = new Handler() {
+    public  class RFIDHandler extends Handler {
+        public void sendLog (String key, String message) {
+            Bundle bundle = new Bundle();
+            bundle.putString("key", key);
+            bundle.putString("log", message);
+            Message msg = new Message();
+            msg.what = 	RFIDService.LOG;
+            msg.setData(bundle);
+            this.sendMessage(msg);
+        }
+
         public void handleMessage(Message msg) {
-            RFIDService.this.prefixStr = RFIDService.this.config.getPrefix();
-            RFIDService.this.surfixStr = RFIDService.this.config.getSurfix();
-            if (msg.what == RFIDThread.UHF) {
-                String data = msg.getData().getString("data");
-                String count = msg.getData().getString("c");
+            Log.d(TAG, msg.toString());
+            //RFIDService.this.sendLog("RFIDServiceMessage", msg.toString());
+            if (msg.what == RFIDThread.LF) {
+                Bundle bundle = msg.getData();
+                String data = bundle.getString("id");
                 if (data != null) {
-                    if ("0A0D".equals(RFIDService.this.prefixStr)) {
-                        RFIDService.this.sendToInput("", true);
-                    } else {
-                        RFIDService.this.sendToInput(RFIDService.this.prefixStr, false);
-                    }
-                    RFIDService.this.sendToInput(data, false);
-                    if ("0A0D".equals(RFIDService.this.surfixStr)) {
-                        RFIDService.this.sendToInput("", true);
-                    } else {
-                        RFIDService.this.sendToInput(RFIDService.this.surfixStr, false);
-                    }
-                    RFIDService.this.showToast(count);
-                    if (RFIDService.this.config.isVoice()) {
-                        Util.play(1, 0);
-                    }
+                    RFIDService.this.sendToInput(bundle);
                 }
             }
+            if (msg.what == RFIDService.LOG) {
+                Bundle bundle = msg.getData();
+                String log = bundle.getString("log");
+                String key = bundle.getString("key");
+                RFIDService.this.sendLog(key, log);
+            }
         }
-    };
+    }
+    public RFIDHandler handler = new RFIDHandler();
 
     private BroadcastReceiver killReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -68,76 +78,89 @@ public class RFIDService extends Service {
             }
         }
     };
-    private BroadcastReceiver mScreenReceiver = new BroadcastReceiver() {
-        public void onReceive(Context arg0, Intent intent) {
-            Log.d(TAG, "mScreenReceiver" );
+
+    private BroadcastReceiver readReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "readReceiver" );
+            RFIDService.this.sendLog("readReceiver","readReceiver");
             String action = intent.getAction();
-            if (action.equals("android.intent.action.SCREEN_ON")) {
-                if (RFIDService.rfidThread == null) {
+            if (action.equals("nemesys.rfid.LF134.read")) {
+                if (RFIDService.rfidThread != null) {
                     try {
-                        RFIDService.rfidThread = new RFIDThread(RFIDService.this.handler, RFIDService.this);
                         RFIDService.rfidThread.start();
-                        Log.i("KeyReceiver", "ScanThread start");
+                        RFIDService.rfidThread.scan();
                     } catch (Exception e) {
-                        Log.i("KeyReceiver", "ScanThread error");
+                        Log.i("readReceiver", "ScanThread error", e);
+                        RFIDService.this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                     }
                 }
-            } else if ("android.intent.action.SCREEN_OFF".equals(action) && RFIDService.rfidThread != null) {
-                RFIDService.rfidThread.close();
-                RFIDService.rfidThread = null;
+                else {
+                    RFIDService.this.sendLog("readReceiver","Thread not startd");
+                    Log.e("readReceiver", "Thread not startd");
+                }
             }
-        }
+         }
     };
-    /* access modifiers changed from: private */
-    public String prefixStr;
-    /* access modifiers changed from: private */
-    public String surfixStr;
-    private Toast toast;
 
     public IBinder onBind(Intent arg0) {
         return binder;
     }
 
-    /* access modifiers changed from: private */
-    public void showToast(String count) {
-        if (this.toast == null) {
-            this.toast = Toast.makeText(this, count, Toast.LENGTH_SHORT);
-        } else {
-            this.toast.setText(count);
-        }
-        this.toast.show();
-    }
-
     public void onCreate() {
         this.config = new ScanConfig(this);
         Util.initSoundPool(this);
+        IntentFilter killfilter = new IntentFilter();
+        killfilter.addAction("android.rfid.KILL_SERVER");
+        registerReceiver(this.killReceiver, killfilter);
         IntentFilter filter = new IntentFilter();
-        filter.addAction("android.rfid.KILL_SERVER");
-        registerReceiver(this.killReceiver, filter);
-        SetScreenReceiver();
+        filter.addAction("nemesys.rfid.LF134.read");
+        registerReceiver(this.readReceiver, filter);
         super.onCreate();
-        Log.e(this.TAG, "open");
+        Log.d(this.TAG, "open");
+        this.sendLog(TAG, "open");
     }
 
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(this.killReceiver);
-        Log.e(this.TAG, "close");
+        unregisterReceiver(this.readReceiver);
+        Log.d(this.TAG, "close");
+        this.sendLog(TAG, "close");
     }
 
-    public int onStartCommand(Intent intent, int flags, int startId) {
+     public int onStartCommand(Intent intent, int flags, int startId) {
         if (rfidThread == null) {
             try {
                 rfidThread = new RFIDThread(this.handler, this);
-                rfidThread.start();
-                Log.e("KeyReceiver", "ScanThread start");
+                //rfidThread.start();
+                //Log.d("RFIDService", "ScanThread start");
             } catch (Exception e) {
-                Log.e("KeyReceiver", "ScanThread error");
+                this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
+                Log.e("RFIDService", "ScanThread error", e);
             }
         } else {
-            rfidThread.scan();
+            try {
+                rfidThread.close();
+                rfidThread = new RFIDThread(this.handler, this);
+                //rfidThread.start();
+            } catch (Exception e) {
+                this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
+                Log.e("RFIDService", "ScanThread error", e);
+            }
+
+           // rfidThread.scan();
         }
+        //rfidThread.startFlag = true;
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void sendLog(String key, String message) {
+        Intent logIntent = new Intent();
+        logIntent.setAction("nemesys.rfid.LF134.log");
+        logIntent.putExtra("key", key);
+        logIntent.putExtra("log", message);
+        sendBroadcast(logIntent);
     }
 
     public static void Close() {
@@ -148,19 +171,34 @@ public class RFIDService extends Service {
     }
 
     /* access modifiers changed from: private */
-    public void sendToInput(String data, boolean enterFlag) {
+    public void sendToInput(Bundle bundle) {
+        String data = bundle.getString("id");
+        String nation = bundle.getString("nation");
+        String type = bundle.getString("type");
+        int datalent = data.length();
+        int nationlent = nation.length();
+        for (int i = 0; i < 12-datalent; i++) {
+            data = "0"+data;
+        }
+        for (int j = 0; j < 3-nationlent; j++) {
+            nation = "0"+nation;
+        }
         Intent toBack = new Intent();
-        toBack.setAction("android.rfid.INPUT");
-        toBack.putExtra("data", data);
-        toBack.putExtra("enter", enterFlag);
+        toBack.setAction("nemesys.rfid.LF134.result");
+        toBack.putExtra("id", data);
+        toBack.putExtra("nation", nation);
+        toBack.putExtra("type", type);
         sendBroadcast(toBack);
+        this.rfidThread.close();
+        this.rfidThread.interrupt();
+        this.rfidThread.runFlag = false;
     }
 
-    private void SetScreenReceiver() {
-        IntentFilter mFilter = new IntentFilter();
-        mFilter.addAction("android.intent.action.SCREEN_OFF");
-        mFilter.addAction("android.intent.action.SCREEN_ON");
-        registerReceiver(this.mScreenReceiver, mFilter);
+    private String getStackTrace(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 
 }

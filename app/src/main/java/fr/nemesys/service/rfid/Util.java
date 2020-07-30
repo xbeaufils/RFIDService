@@ -15,7 +15,7 @@ public class Util {
 
     public static void initSoundPool(Context context2) {
         context = context2;
-        sp = new SoundPool(1, 3, 1);
+        sp = (new SoundPool.Builder()).build();// new SoundPool(1, 3, 1);
         suondMap = new HashMap<>();
         //suondMap.put(1, Integer.valueOf(sp.load(context2, R.raw.msg, 1)));
     }

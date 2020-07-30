@@ -9,22 +9,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name="com.example.uhfservice.KeyReceiver">
-            <intent-filter>
-                <action android:name="android.rfid.FUN_KEY"/>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </receiver>
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="fr.nemesys.service.rfid.RFIDService"/>
+        <service android:name="fr.nemesys.service.rfid.RFIDService" android:exported="true"/>
 
     </application>
 
