@@ -18,6 +18,8 @@ import androidx.core.app.JobIntentService;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import io.sentry.core.Sentry;
+
 public class RFIDService extends Service  {
     private final IBinder binder = new RFIDBinder();
 
@@ -91,6 +93,7 @@ public class RFIDService extends Service  {
                         RFIDService.rfidThread.start();
                         RFIDService.rfidThread.scan();
                     } catch (Exception e) {
+                        Sentry.captureException(e);
                         Log.i("readReceiver", "ScanThread error", e);
                         RFIDService.this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                     }
@@ -136,6 +139,7 @@ public class RFIDService extends Service  {
                 //rfidThread.start();
                 //Log.d("RFIDService", "ScanThread start");
             } catch (Exception e) {
+                Sentry.captureException(e);
                 this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                 Log.e("RFIDService", "ScanThread error", e);
             }
@@ -145,6 +149,7 @@ public class RFIDService extends Service  {
                 rfidThread = new RFIDThread(this.handler, this);
                 //rfidThread.start();
             } catch (Exception e) {
+                Sentry.captureException(e);
                 this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                 Log.e("RFIDService", "ScanThread error", e);
             }
@@ -196,6 +201,7 @@ public class RFIDService extends Service  {
         }
         catch (Exception e) {
             this.sendLog("RFID:sendToInput", getStackTrace(e) );
+            Sentry.captureException(e);
         }
     }
 

@@ -8,22 +8,26 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import cn.pda.serialport.MockSerialPort;
 import cn.pda.serialport.SerialPort;
 import cn.pda.serialport.Tools;
 import fr.nemesys.service.rfid.RFIDService;
+import io.sentry.core.Sentry;
 
 public class Lf134KManager {
 	public static int Port = SerialPort.com12; //
 	public static int Power = SerialPort.Power_Rfid;
 	public static int BaudRate = SerialPort.baudrate9600;
-//	private static MockSerialPort mSerialPort;//
-	private static SerialPort mSerialPort;//
+	private static MockSerialPort mSerialPort;//
+//	private static SerialPort mSerialPort;//
 	private static InputStream mInputStream;
 	public static int LF = 1004;
 	private static final String TAG = "Lf134KManager";
 	private RFIDService.RFIDHandler handler;
+
+	private byte[] previousBuffer = new byte[128];
 
 	/**
 	 * open device
@@ -35,8 +39,8 @@ public class Lf134KManager {
 		this.handler.sendLog(TAG, "RFID power is " + PowerArg);
 		try {
 			Power = PowerArg;
-			mSerialPort = new SerialPort(Port, BaudRate, 0);
-//			mSerialPort = new MockSerialPort(Port, BaudRate, 0);
+//			mSerialPort = new SerialPort(Port, BaudRate, 0);
+			mSerialPort = new MockSerialPort(Port, BaudRate, 0);
 			switch (Power) {
 			case SerialPort.Power_Scaner:
 				mSerialPort.scaner_poweron();
@@ -60,11 +64,13 @@ public class Lf134KManager {
 			mInputStream = mSerialPort.getInputStream();
 
 		} catch (SecurityException e) {
+			Sentry.captureException(e);
 			e.printStackTrace();
-			this.handler.sendLog(TAG, getStackTrace(e) );
+			this.handler.sendLog(TAG, RFIDService.getStackTrace(e) );
 		} catch (IOException e) {
+			Sentry.captureException(e);
 			e.printStackTrace();
-			this.handler.sendLog(TAG, getStackTrace(e) );
+			this.handler.sendLog(TAG, RFIDService.getStackTrace(e) );
 		}
 
 	}
@@ -74,7 +80,8 @@ public class Lf134KManager {
 		try {
 			mInputStream.close();
 		} catch (IOException e) {
-			this.handler.sendLog(TAG, getStackTrace(e) );
+			Sentry.captureException(e);
+			this.handler.sendLog(TAG, RFIDService.getStackTrace(e) );
 			e.printStackTrace();
 			return false;
 		}
@@ -109,7 +116,8 @@ public class Lf134KManager {
 				mInputStream.read(new byte[4906]);
 			}
 		} catch (IOException e) {
-			this.handler.sendLog(TAG, getStackTrace(e) );
+			Sentry.captureException(e);
+			this.handler.sendLog(TAG, RFIDService.getStackTrace(e) );
 			e.printStackTrace();
 		}
 	}
@@ -131,7 +139,8 @@ public class Lf134KManager {
 					break;
 				}
 			} catch (IOException e1) {
-				this.handler.sendLog(TAG, getStackTrace(e1) );
+				Sentry.captureException(e1);
+				this.handler.sendLog(TAG, RFIDService.getStackTrace(e1) );
 				e1.printStackTrace();
 			}
 		}
@@ -141,6 +150,10 @@ public class Lf134KManager {
 //		000:000000000000
 
 		//Log.e("buf", Tools.Bytes2HexString(buffer, size));
+		if (previousBuffer != buffer) {
+			this.handler.sendLog(TAG,new String(buffer, 0, size-1, StandardCharsets.UTF_8));
+			previousBuffer = buffer;
+		}
 		if(size>=30 && checkByte(buffer)){
 			Lf134kDataModel model = getData(buffer);
 			return model;
@@ -180,8 +193,9 @@ public class Lf134KManager {
 			model.Reserved = Tools.HexString2Bytes(new String(model.Reserved,"us-ascii"));
 			model.Extend = Tools.HexString2Bytes(new String(model.Extend,"US-ASCII"));
 		} catch (UnsupportedEncodingException e) {
+			Sentry.captureException(e);
 			e.printStackTrace();
-			this.handler.sendLog(TAG, getStackTrace(e) );
+			this.handler.sendLog(TAG, RFIDService.getStackTrace(e) );
 		}
 		if (buffer[29] == 0x03) {
 			model.Type = "FDX-B";
@@ -224,11 +238,5 @@ public class Lf134KManager {
 		}else {
 			return false;
 		}
-	}
-	private String getStackTrace(Exception e) {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		e.printStackTrace(pw);
-		return sw.toString();
 	}
 }

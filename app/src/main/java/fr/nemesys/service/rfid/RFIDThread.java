@@ -16,6 +16,7 @@ import java.util.TimerTask;
 
 import cn.pda.serialport.SerialPort;
 import cn.pda.serialport.Tools;
+import io.sentry.core.Sentry;
 
 public class RFIDThread extends Thread {
     public static int LF = 1004;
@@ -41,10 +42,14 @@ public class RFIDThread extends Thread {
                     Thread.sleep(150);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    this.handler.sendLog("RFIDThread", RFIDService.getStackTrace(e));
+                    Sentry.captureException(e);
                 }
             }
         }catch (IOException e) {
             e.printStackTrace();
+            this.handler.sendLog("RFIDThread", RFIDService.getStackTrace(e));
+            Sentry.captureException(e);
         }
     }
 
