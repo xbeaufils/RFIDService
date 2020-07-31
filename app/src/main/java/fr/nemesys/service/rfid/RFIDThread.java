@@ -53,8 +53,8 @@ public class RFIDThread extends Thread {
         while (this.runFlag) {
             if (startFlag) {
                 Lf134kDataModel datamodel = this.reader.GetData( /*Boolean.valueOf(this.startFlag)); ,*/ 100);
-                this.handler.sendLog("RFIDThread:run",Tools.BytesToLong(datamodel.ID)+"" );
                 if (datamodel!=null) {
+                    this.handler.sendLog("RFIDThread:run",Tools.BytesToLong(datamodel.ID)+"" );
                     sendMSG(Tools.BytesToLong(datamodel.ID)+"",Tools.BytesToLong(datamodel.Country)+"",datamodel.Type);
                 }
             }

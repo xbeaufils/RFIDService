@@ -145,24 +145,29 @@ import java.util.TimerTask;
                     Log.d("READ", "Click");
                     MainActivity.this.createLoaddingDialog();
                     //Intent intentRfid = new Intent(MainActivity.this, RFIDService.class);
-                    Intent intentRfid = new Intent();
-                    intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
-                    //MainActivity.this.startService(intentRfid);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(intentRfid);
-                    }else {
-                        startService(intentRfid);
-                    }
-                    Intent toRead = new Intent();
-                    toRead.setAction("nemesys.rfid.LF134.read");
-                    MainActivity.this.sendBroadcast(toRead);
-                    new Timer().schedule(new TimerTask() {
-                        public void run() {
-                            Message msg = new Message();
-                            msg.what = MSG_CANSEL_DIALOG;
-                            MainActivity.this.mHandler.sendMessage(msg);
+                    try {
+                        Intent intentRfid = new Intent();
+                        intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
+                        //MainActivity.this.startService(intentRfid);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intentRfid);
+                        } else {
+                            startService(intentRfid);
                         }
-                    }, 2000);
+                        Intent toRead = new Intent();
+                        toRead.setAction("nemesys.rfid.LF134.read");
+                        MainActivity.this.sendBroadcast(toRead);
+                        new Timer().schedule(new TimerTask() {
+                            public void run() {
+                                Message msg = new Message();
+                                msg.what = MSG_CANSEL_DIALOG;
+                                MainActivity.this.mHandler.sendMessage(msg);
+                            }
+                        }, 2000);
+                    }
+                    catch (Exception e) {
+                        MainActivity.this.WriteLog("boucleReceiver",  RFIDService.getStackTrace(e));
+                    }
                     return;
                 }
             });

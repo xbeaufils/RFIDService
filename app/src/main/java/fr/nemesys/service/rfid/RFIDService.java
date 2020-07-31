@@ -172,29 +172,34 @@ public class RFIDService extends Service  {
 
     /* access modifiers changed from: private */
     public void sendToInput(Bundle bundle) {
-        String data = bundle.getString("id");
-        String nation = bundle.getString("nation");
-        String type = bundle.getString("type");
-        int datalent = data.length();
-        int nationlent = nation.length();
-        for (int i = 0; i < 12-datalent; i++) {
-            data = "0"+data;
+        try {
+            String data = bundle.getString("id");
+            String nation = bundle.getString("nation");
+            String type = bundle.getString("type");
+            int datalent = data.length();
+            int nationlent = nation.length();
+            for (int i = 0; i < 12 - datalent; i++) {
+                data = "0" + data;
+            }
+            for (int j = 0; j < 3 - nationlent; j++) {
+                nation = "0" + nation;
+            }
+            Intent toBack = new Intent();
+            toBack.setAction("nemesys.rfid.LF134.result");
+            toBack.putExtra("id", data);
+            toBack.putExtra("nation", nation);
+            toBack.putExtra("type", type);
+            sendBroadcast(toBack);
+            this.rfidThread.close();
+            this.rfidThread.interrupt();
+            this.rfidThread.runFlag = false;
         }
-        for (int j = 0; j < 3-nationlent; j++) {
-            nation = "0"+nation;
+        catch (Exception e) {
+            this.sendLog("RFID:sendToInput", getStackTrace(e) );
         }
-        Intent toBack = new Intent();
-        toBack.setAction("nemesys.rfid.LF134.result");
-        toBack.putExtra("id", data);
-        toBack.putExtra("nation", nation);
-        toBack.putExtra("type", type);
-        sendBroadcast(toBack);
-        this.rfidThread.close();
-        this.rfidThread.interrupt();
-        this.rfidThread.runFlag = false;
     }
 
-    private String getStackTrace(Exception e) {
+    public static String getStackTrace(Exception e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
