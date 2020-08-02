@@ -18,6 +18,9 @@ import androidx.core.app.JobIntentService;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import cn.pda.serialport.SerialPort;
+import io.sentry.core.Sentry;
+
 public class RFIDService extends Service  {
     private final IBinder binder = new RFIDBinder();
 
@@ -130,21 +133,26 @@ public class RFIDService extends Service  {
     }
 
      public int onStartCommand(Intent intent, int flags, int startId) {
+        int com = intent.getIntExtra("port", -1);
+        Log.d("RFID:OnstartCommand", " Port " + com);
+        this.sendLog("RFID:OnstartCommand", " Port " + com);
         if (rfidThread == null) {
             try {
-                rfidThread = new RFIDThread(this.handler, this);
+                rfidThread = new RFIDThread(this.handler, com,this);
                 //rfidThread.start();
                 //Log.d("RFIDService", "ScanThread start");
             } catch (Exception e) {
+                Sentry.captureException(e);
                 this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                 Log.e("RFIDService", "ScanThread error", e);
             }
         } else {
             try {
                 rfidThread.close();
-                rfidThread = new RFIDThread(this.handler, this);
+                rfidThread = new RFIDThread(this.handler, com,this);
                 //rfidThread.start();
             } catch (Exception e) {
+                Sentry.captureException(e);
                 this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                 Log.e("RFIDService", "ScanThread error", e);
             }
@@ -195,6 +203,7 @@ public class RFIDService extends Service  {
             this.rfidThread.runFlag = false;
         }
         catch (Exception e) {
+            Sentry.captureException(e);
             this.sendLog("RFID:sendToInput", getStackTrace(e) );
         }
     }

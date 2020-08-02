@@ -16,6 +16,7 @@ import java.util.TimerTask;
 
 import cn.pda.serialport.SerialPort;
 import cn.pda.serialport.Tools;
+import io.sentry.core.Sentry;
 
 public class RFIDThread extends Thread {
     public static int LF = 1004;
@@ -28,22 +29,24 @@ public class RFIDThread extends Thread {
     /* access modifiers changed from: private */
     public boolean startFlag = false;
 
-    public RFIDThread(Handler handler, Context context) throws SecurityException, IOException {
+    public RFIDThread(Handler handler, int port,  Context context) throws SecurityException, IOException {
         this.mContext = context;
         this.config = new ScanConfig(this.mContext);
         this.handler = (RFIDService.RFIDHandler) handler;
         try {
-            this.reader = new Lf134KManager(SerialPort.Power_Rfid, this.handler);
+            this.reader = new Lf134KManager( port, this.handler);
             if (this.reader != null) {
                 Log.e("RFIDThread", "init lf success");
                 this.handler.sendLog("RFIDThread", "init lf success");
                 try {
                     Thread.sleep(150);
                 } catch (InterruptedException e) {
+                    Sentry.captureException(e);
                     e.printStackTrace();
                 }
             }
         }catch (IOException e) {
+            Sentry.captureException(e);
             e.printStackTrace();
         }
     }

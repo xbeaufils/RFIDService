@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +29,10 @@ import com.handheld.LF134K.Lf134KManager;
 import java.util.Timer;
 import java.util.TimerTask;
 
-    public class MainActivity extends AppCompatActivity {
+import cn.pda.serialport.SerialPort;
+import io.sentry.core.Sentry;
+
+public class MainActivity extends AppCompatActivity {
         @Override
         protected void onDestroy() {
             super.onDestroy();
@@ -58,6 +63,7 @@ import java.util.TimerTask;
         private Button buttonClear;
         private TextView textViewData;
         private TextView textViewLog;
+        private RadioGroup rdgPort;
 
         private void setBoucleReceiver() {
             IntentFilter mFilter = new IntentFilter();
@@ -129,6 +135,7 @@ import java.util.TimerTask;
                 stringBuilder.append("-v" + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
                 setTitle(stringBuilder.toString());
             } catch (PackageManager.NameNotFoundException e) {
+                Sentry.captureException(e);
                 e.printStackTrace();
             }
 
@@ -140,13 +147,28 @@ import java.util.TimerTask;
             this.textViewData = (TextView) findViewById(R.id.textViewData);
             this.textViewLog = (TextView) findViewById(R.id.textViewLog);
             this.buttonRead = (Button) findViewById(R.id.button_read);
+            this.rdgPort = (RadioGroup) findViewById(R.id.rdgPort);
             this.buttonRead.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
                     Log.d("READ", "Click");
                     MainActivity.this.createLoaddingDialog();
+                    int idPort = MainActivity.this.rdgPort.getCheckedRadioButtonId();
+                    int com = -1;
+                    switch (idPort) {
+                        case R.id.rdPort11:
+                            com = SerialPort.com11; break;
+                        case R.id.rdPort12:
+                            com = SerialPort.com12; break;
+                        case R.id.rdPort13 :
+                            com = SerialPort.com13; break;
+                        case R.id.rdPort14:
+                            com = SerialPort.com14; break;
+                    }
+
                     //Intent intentRfid = new Intent(MainActivity.this, RFIDService.class);
                     try {
                         Intent intentRfid = new Intent();
+                        intentRfid.putExtra("port", com);
                         intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
                         //MainActivity.this.startService(intentRfid);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -166,6 +188,7 @@ import java.util.TimerTask;
                         }, 2000);
                     }
                     catch (Exception e) {
+                        Sentry.captureException(e);
                         MainActivity.this.WriteLog("boucleReceiver",  RFIDService.getStackTrace(e));
                     }
                     return;
@@ -178,6 +201,7 @@ import java.util.TimerTask;
                 MainActivity.this.textViewData.setText(null);
                 }
             });
+            /*
             Intent intentRfid = new Intent();
             intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -185,7 +209,7 @@ import java.util.TimerTask;
             }else {
                 startService(intentRfid);
             }
-
+            */
             //this.startService(new Intent(MainActivity.this, RFIDService.class));
          }
 
