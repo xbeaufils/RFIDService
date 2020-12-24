@@ -3,8 +3,6 @@ package cn.pda.serialport;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.R.integer;
-
 
 public class Tools {
 	

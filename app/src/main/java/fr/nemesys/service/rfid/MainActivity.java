@@ -24,12 +24,12 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.handheld.LF134K.Lf134KManager;
+import com.handheld.LF134K.LF134KManager;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import cn.pda.serialport.SerialPort;
+import cn.pda.serialport.ISerialPort;
 import io.sentry.core.Sentry;
 
 public class MainActivity extends AppCompatActivity {
@@ -82,11 +82,10 @@ public class MainActivity extends AppCompatActivity {
                     if (extras != null) {
                         String id = extras.getString("id");
                         String nation = extras.getString("nation");
-                        String type = extras.getString("type");
                         Log.d("boucleReceiver", "id " + id);
                         MainActivity.this.WriteLog("boucleReceiver", "id " + id);
                         if (MainActivity.this.dialogLoading != null) {
-                            MainActivity.this.textViewData.setText("nation :" + nation + " id " + id + " type " + type);
+                            MainActivity.this.textViewData.setText("nation :" + nation + " id " + id);
                             MainActivity.this.dialogLoading.cancel();
                         }
                     }
@@ -129,9 +128,9 @@ public class MainActivity extends AppCompatActivity {
             try {
                 StringBuilder stringBuilder = new StringBuilder(getString(R.string.app_name));
                 stringBuilder.append("-");
-                stringBuilder.append(String.valueOf(Lf134KManager.Port));
+                stringBuilder.append(String.valueOf(LF134KManager.Port));
                 stringBuilder.append(",");
-                stringBuilder.append(Lf134KManager.getPowerString());
+                stringBuilder.append(LF134KManager.Power);
                 stringBuilder.append("-v" + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
                 setTitle(stringBuilder.toString());
             } catch (PackageManager.NameNotFoundException e) {
@@ -147,35 +146,29 @@ public class MainActivity extends AppCompatActivity {
             this.textViewData = (TextView) findViewById(R.id.textViewData);
             this.textViewLog = (TextView) findViewById(R.id.textViewLog);
             this.buttonRead = (Button) findViewById(R.id.button_read);
-            this.rdgPort = (RadioGroup) findViewById(R.id.rdgPort);
+            //this.rdgPort = (RadioGroup) findViewById(R.id.rdgPort);
+            try {
+                Intent intentRfid = new Intent();
+                //intentRfid.putExtra("port", com);
+                intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
+                //MainActivity.this.startService(intentRfid);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intentRfid);
+                } else {
+                    startService(intentRfid);
+                }
+            } catch (Exception e) {
+                Sentry.captureException(e);
+                MainActivity.this.WriteLog("initView", RFIDService.getStackTrace(e));
+            }
             this.buttonRead.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
                     Log.d("READ", "Click");
-                    MainActivity.this.createLoaddingDialog();
-                    int idPort = MainActivity.this.rdgPort.getCheckedRadioButtonId();
-                    int com = -1;
-                    switch (idPort) {
-                        case R.id.rdPort11:
-                            com = SerialPort.com11; break;
-                        case R.id.rdPort12:
-                            com = SerialPort.com12; break;
-                        case R.id.rdPort13 :
-                            com = SerialPort.com13; break;
-                        case R.id.rdPort14:
-                            com = SerialPort.com14; break;
-                    }
-
+                    MainActivity.this.createLoadingDialog();
                     //Intent intentRfid = new Intent(MainActivity.this, RFIDService.class);
+                    //try {Thread.sleep(1000);}
+                    //catch(InterruptedException ex) { Thread.currentThread().interrupt();}
                     try {
-                        Intent intentRfid = new Intent();
-                        intentRfid.putExtra("port", com);
-                        intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
-                        //MainActivity.this.startService(intentRfid);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(intentRfid);
-                        } else {
-                            startService(intentRfid);
-                        }
                         Intent toRead = new Intent();
                         toRead.setAction("nemesys.rfid.LF134.read");
                         MainActivity.this.sendBroadcast(toRead);
@@ -186,10 +179,9 @@ public class MainActivity extends AppCompatActivity {
                                 MainActivity.this.mHandler.sendMessage(msg);
                             }
                         }, 2000);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         Sentry.captureException(e);
-                        MainActivity.this.WriteLog("boucleReceiver",  RFIDService.getStackTrace(e));
+                        MainActivity.this.WriteLog("boucleReceiver", RFIDService.getStackTrace(e));
                     }
                     return;
                 }
@@ -214,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
          }
 
         /* access modifiers changed from: private */
-        public void createLoaddingDialog() {
+        public void createLoadingDialog() {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setView(LayoutInflater.from(this).inflate(R.layout.dialog_loading, (ViewGroup) null));
             this.dialogLoading = builder.create();

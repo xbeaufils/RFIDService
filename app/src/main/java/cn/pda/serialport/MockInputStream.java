@@ -25,11 +25,13 @@ public class MockInputStream extends ByteArrayInputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        for (int i = 0; i < initialArray.length; i++)
+        for (int i = 0; i < initialArray.length; i++) {
+            android.util.Log.d("MOCK", "read: " +  initialArray[i]);
             b[i] = initialArray[i];
+        }
         //b = Arrays.copyOf(initialArray, 30);
         //System.arraycopy(b, 0, initialArray, 0, 30);
-        return 30;
+        return initialArray.length;
         //return super.read(b);
     }
 }
