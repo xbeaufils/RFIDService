@@ -1,5 +1,7 @@
 package cn.pda.serialport;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,6 +12,7 @@ public class MockInputStream extends ByteArrayInputStream {
     public MockInputStream(byte[] buf) {
         super(buf);
         this.initialArray = Arrays.copyOf(buf, buf.length);
+        Log.d("MOCK", "MockInputStream: " + this.initialArray.length);
     }
 
     @Override
@@ -25,6 +28,7 @@ public class MockInputStream extends ByteArrayInputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
+        Log.d("MOCK", "read: " +  initialArray.length + " buffer size " + b.length);
         for (int i = 0; i < initialArray.length; i++) {
             android.util.Log.d("MOCK", "read: " +  initialArray[i]);
             b[i] = initialArray[i];

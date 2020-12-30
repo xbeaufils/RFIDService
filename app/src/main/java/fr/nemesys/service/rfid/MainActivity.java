@@ -80,12 +80,14 @@ public class MainActivity extends AppCompatActivity {
                 if (action.equals("nemesys.rfid.LF134.result")) {
                     Bundle extras = intent.getExtras();
                     if (extras != null) {
-                        String id = extras.getString("id");
-                        String nation = extras.getString("nation");
+                        String id = extras.getString(LF134KManager.KEY_134K_ID);
+                        String nation = extras.getString(LF134KManager.KEY_134K_COUNTRY);
+                        String boucle = extras.getString("boucle");
+                        String marquage = extras.getString("marquage");
                         Log.d("boucleReceiver", "id " + id);
                         MainActivity.this.WriteLog("boucleReceiver", "id " + id);
                         if (MainActivity.this.dialogLoading != null) {
-                            MainActivity.this.textViewData.setText("nation :" + nation + " id " + id);
+                            MainActivity.this.textViewData.setText("nation :" + nation + " id " + id + "\nboucle " + boucle + " marquage " + marquage );
                             MainActivity.this.dialogLoading.cancel();
                         }
                     }

@@ -41,7 +41,7 @@ public class LF134KManager {
     public LF134KManager(Handler handler) throws SecurityException, IOException {
         this.handler = handler ;
         mSerialport = new SerialPort(Port, BaudRate,0) ;
-        //mSerialport = new MockSerialPort(Port, BaudRate,0) ;
+//        mSerialport = new MockSerialPort(Port, BaudRate,0) ;
 //		Log.e("port", Port+":"+BaudRate+":"+Power);
         //open power
         switch (Power) {
@@ -65,7 +65,7 @@ public class LF134KManager {
         mOut = mSerialport.getOutputStream() ;
         sleep(500) ;
         //clear useless data
-        byte[] temp = new byte[16] ;
+        byte[] temp = new byte[30] ;
         mIn.read(temp);
         readThread = new ReadThread();
         readThread.start();
@@ -110,6 +110,8 @@ public class LF134KManager {
                         Log.d(TAG,  "Received : " + Tools.Bytes2HexString(recv, recv.length)) ;
                         //resolveData(recv) ;
                         Lf134kDataModel model = this.getData(recv);
+                        Log.d(TAG,  "Received : ID " + Tools.Bytes2HexString(model.ID, model.ID.length)) ;
+                        Log.d(TAG,  "Received : Country " + Tools.Bytes2HexString(model.Country, model.Country.length)) ;
                         sendMsg(Tools.BytesToLong(model.Country) + "", Tools.BytesToLong(model.ID) + "");
                     }
                 }
