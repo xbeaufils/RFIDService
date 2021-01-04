@@ -40,6 +40,12 @@ public class SerialPort implements ISerialPort {
 	private boolean trig_on=false;
 	byte[] test;
 	//
+
+	static {
+		System.loadLibrary("devapi");
+		System.loadLibrary("irdaSerialPort");
+	}
+
 	public SerialPort(){}
 	
 	public SerialPort(int port, int baudrate, int flags) throws SecurityException, IOException {
@@ -138,10 +144,4 @@ public class SerialPort implements ISerialPort {
 //	public native void setPortParity(int mode); //
 	
 	public native void test(byte[] bytes);
-
-	static {
-		System.loadLibrary("devapi");
-		System.loadLibrary("irdaSerialPort");
-	}
-
 }
