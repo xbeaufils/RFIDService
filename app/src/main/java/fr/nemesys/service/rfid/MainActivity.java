@@ -18,16 +18,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.handheld.LF134K.Lf134KManager;
+import com.handheld.LF134K.LF134KManager;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-    public class MainActivity extends AppCompatActivity {
+import cn.pda.serialport.ISerialPort;
+import io.sentry.core.Sentry;
+
+public class MainActivity extends AppCompatActivity {
         @Override
         protected void onDestroy() {
             super.onDestroy();
@@ -58,6 +63,7 @@ import java.util.TimerTask;
         private Button buttonClear;
         private TextView textViewData;
         private TextView textViewLog;
+        private RadioGroup rdgPort;
 
         private void setBoucleReceiver() {
             IntentFilter mFilter = new IntentFilter();
@@ -76,11 +82,10 @@ import java.util.TimerTask;
                     if (extras != null) {
                         String id = extras.getString("id");
                         String nation = extras.getString("nation");
-                        String type = extras.getString("type");
                         Log.d("boucleReceiver", "id " + id);
                         MainActivity.this.WriteLog("boucleReceiver", "id " + id);
                         if (MainActivity.this.dialogLoading != null) {
-                            MainActivity.this.textViewData.setText("nation :" + nation + " id " + id + " type " + type);
+                            MainActivity.this.textViewData.setText("nation :" + nation + " id " + id);
                             MainActivity.this.dialogLoading.cancel();
                         }
                     }
@@ -123,12 +128,13 @@ import java.util.TimerTask;
             try {
                 StringBuilder stringBuilder = new StringBuilder(getString(R.string.app_name));
                 stringBuilder.append("-");
-                stringBuilder.append(String.valueOf(Lf134KManager.Port));
+                stringBuilder.append(String.valueOf(LF134KManager.Port));
                 stringBuilder.append(",");
-                stringBuilder.append(Lf134KManager.getPowerString());
+                stringBuilder.append(LF134KManager.Power);
                 stringBuilder.append("-v" + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
                 setTitle(stringBuilder.toString());
             } catch (PackageManager.NameNotFoundException e) {
+                Sentry.captureException(e);
                 e.printStackTrace();
             }
 
@@ -140,20 +146,29 @@ import java.util.TimerTask;
             this.textViewData = (TextView) findViewById(R.id.textViewData);
             this.textViewLog = (TextView) findViewById(R.id.textViewLog);
             this.buttonRead = (Button) findViewById(R.id.button_read);
+            //this.rdgPort = (RadioGroup) findViewById(R.id.rdgPort);
+            try {
+                Intent intentRfid = new Intent();
+                //intentRfid.putExtra("port", com);
+                intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
+                //MainActivity.this.startService(intentRfid);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intentRfid);
+                } else {
+                    startService(intentRfid);
+                }
+            } catch (Exception e) {
+                Sentry.captureException(e);
+                MainActivity.this.WriteLog("initView", RFIDService.getStackTrace(e));
+            }
             this.buttonRead.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
                     Log.d("READ", "Click");
-                    MainActivity.this.createLoaddingDialog();
+                    MainActivity.this.createLoadingDialog();
                     //Intent intentRfid = new Intent(MainActivity.this, RFIDService.class);
+                    //try {Thread.sleep(1000);}
+                    //catch(InterruptedException ex) { Thread.currentThread().interrupt();}
                     try {
-                        Intent intentRfid = new Intent();
-                        intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
-                        //MainActivity.this.startService(intentRfid);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(intentRfid);
-                        } else {
-                            startService(intentRfid);
-                        }
                         Intent toRead = new Intent();
                         toRead.setAction("nemesys.rfid.LF134.read");
                         MainActivity.this.sendBroadcast(toRead);
@@ -164,9 +179,9 @@ import java.util.TimerTask;
                                 MainActivity.this.mHandler.sendMessage(msg);
                             }
                         }, 2000);
-                    }
-                    catch (Exception e) {
-                        MainActivity.this.WriteLog("boucleReceiver",  RFIDService.getStackTrace(e));
+                    } catch (Exception e) {
+                        Sentry.captureException(e);
+                        MainActivity.this.WriteLog("boucleReceiver", RFIDService.getStackTrace(e));
                     }
                     return;
                 }
@@ -178,6 +193,7 @@ import java.util.TimerTask;
                 MainActivity.this.textViewData.setText(null);
                 }
             });
+            /*
             Intent intentRfid = new Intent();
             intentRfid.setComponent(new ComponentName("fr.nemesys.service.rfid", "fr.nemesys.service.rfid.RFIDService"));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -185,12 +201,12 @@ import java.util.TimerTask;
             }else {
                 startService(intentRfid);
             }
-
+            */
             //this.startService(new Intent(MainActivity.this, RFIDService.class));
          }
 
         /* access modifiers changed from: private */
-        public void createLoaddingDialog() {
+        public void createLoadingDialog() {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setView(LayoutInflater.from(this).inflate(R.layout.dialog_loading, (ViewGroup) null));
             this.dialogLoading = builder.create();
