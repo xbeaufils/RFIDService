@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
         <service android:name="fr.nemesys.service.rfid.RFIDService" android:exported="true"/>
-
+        <meta-data android:name="io.sentry.dsn" android:value="https://4d2738e6799b4264b3dfb02bcf364fb6@o406124.ingest.sentry.io/5373317" />
     </application>
 
 </manifest>

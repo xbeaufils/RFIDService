@@ -96,7 +96,7 @@ public class MockSerialPort implements ISerialPort{
 
 
 
-	
+
 //	public native void setPortParity(int mode); //
 	
 	public native void test(byte[] bytes);

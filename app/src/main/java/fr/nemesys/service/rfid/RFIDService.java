@@ -64,11 +64,10 @@ public class RFIDService extends Service  {
 
         public void handleMessage(Message msg) {
             Log.d(TAG, msg.toString());
-            //RFIDService.this.sendLog("RFIDServiceMessage", msg.toString());
+            RFIDService.this.sendLog("RFIDServiceMessage", msg.toString());
             if (msg.what == LF134KManager.MSG_RFID_134K) {
                 Bundle bundle = msg.getData();
-                String  data = bundle.getString(LF134KManager.KEY_134K_ID);
-                //String data = bundle.getString("id");
+                String data = bundle.getString(LF134KManager.KEY_134K_ID);
                 if (data != null) {
                     String nation = bundle.getString(LF134KManager.KEY_134K_COUNTRY);
                     String type = bundle.getString("type");
@@ -116,6 +115,7 @@ public class RFIDService extends Service  {
                     try {
                         RFIDService.reader.startRead();
                     } catch (Exception e) {
+                        Sentry.captureException(e);
                         Log.i("readReceiver", "ScanThread error", e);
                         RFIDService.this.sendLog("RFID:OnstartCommand", getStackTrace(e) );
                     }
@@ -172,6 +172,10 @@ public class RFIDService extends Service  {
         super.onDestroy();
         unregisterReceiver(this.killReceiver);
         unregisterReceiver(this.readReceiver);
+        if (reader != null) {
+            reader.Close();
+            reader = null;
+        }
         Log.d(this.TAG, "close");
         this.sendLog(TAG, "close");
     }
@@ -207,6 +211,7 @@ public class RFIDService extends Service  {
                      .setAutoCancel(true);
              Notification notification = builder.build();
              startForeground(NOTIFICATION_ID, notification);
+             //Sentry.addBreadcrumb("");
          } else {
              NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                      .setContentTitle(getString(R.string.app_name))
@@ -237,31 +242,6 @@ public class RFIDService extends Service  {
     /* access modifiers changed from: private */
     public void sendToInput(Bundle bundle) {
         try {
-            /*
-            int iData = bundle.getInt(LF134KManager.KEY_134K_ID);
-            Intent toBack = new Intent();
-            toBack.setAction("nemesys.rfid.LF134.result");
-            if (iData != 0) {
-                String data = new Integer(bundle.getInt(LF134KManager.KEY_134K_ID)).toString();
-                int datalent = data.length();
-                for (int i = 0; i < 12 - datalent; i++) {
-                    data = "0" + data;
-                }
-                toBack.putExtra("id", data);
-                Log.d(TAG, "sendToInput: " + data);
-            }
-            int iNation = bundle.getInt(LF134KManager.KEY_134K_COUNTRY);
-            if (iNation != 0) {
-                String nation = new Integer(iNation).toString();
-                String type = bundle.getString("type");
-                int nationlent = nation.length();
-                for (int j = 0; j < 3 - nationlent; j++) {
-                    nation = "0" + nation;
-                }
-                toBack.putExtra("nation", nation);
-                toBack.putExtra("type", type);
-            }
-            */
             String data = bundle.getString(LF134KManager.KEY_134K_ID);
             String nation = bundle.getString(LF134KManager.KEY_134K_COUNTRY);
             Intent toBack = new Intent();
@@ -269,12 +249,13 @@ public class RFIDService extends Service  {
             // obj {"id":"3530654 00345","nation":"156","boucle":"5400345","marquage":"35306"}
             toBack.putExtra("marquage",data.substring(0,6 ));
             toBack.putExtra("boucle",data.substring(6) );
-            toBack.putExtra(LF134KManager.KEY_134K_ID, data);
-            toBack.putExtra(LF134KManager.KEY_134K_COUNTRY, nation);
+            toBack.putExtra("id", data);
+            toBack.putExtra("nation", nation);
             sendBroadcast(toBack);
             this.reader.stopRead();
         }
         catch (Exception e) {
+            this.sendLog("RFID:sendToInput", getStackTrace(e) );
             Sentry.captureException(e);
             this.sendLog("RFID:sendToInput", getStackTrace(e) );
         }

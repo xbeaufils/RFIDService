@@ -12,10 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-//import cn.pda.serialport.ISerialPort;
 import cn.pda.serialport.*; //MockSerialPort;
-//import cn.pda.serialport.SerialPort;
-//import cn.pda.serialport.Tools;
 
 /**
  * 134.2K接口 interface
@@ -23,7 +20,7 @@ import cn.pda.serialport.*; //MockSerialPort;
  *
  */
 public class LF134KManager {
-    private ISerialPort mSerialport ;
+    private ISerialPort mSerialPort ;
     private InputStream mIn ;
     private OutputStream mOut ;
     public static int Port = 0 ;
@@ -40,32 +37,40 @@ public class LF134KManager {
     private String TAG = "RFIDService" ;
     public LF134KManager(Handler handler) throws SecurityException, IOException {
         this.handler = handler ;
-        mSerialport = new SerialPort(Port, BaudRate,0) ;
-        //mSerialport = new MockSerialPort(Port, BaudRate,0) ;
+        // ----------- Prod --------------------
+        mSerialPort = new SerialPort(Port, BaudRate,0) ;
+        if (Port == 0) {
+            mSerialPort.scaner_poweron();
+        }
+        // ----------- Prod --------------------
+
+        // ---------- Dev -----------------
+//        mSerialport = new MockSerialPort(Port, BaudRate,0) ;
+        // ---------- Dev -----------------
 //		Log.e("port", Port+":"+BaudRate+":"+Power);
         //open power
         switch (Power) {
             case ISerialPort.Power_Scaner:
-                mSerialport.scaner_poweron();
+                mSerialPort.scaner_poweron();
                 break;
             case ISerialPort.Power_3v3:
-                mSerialport.power_3v3on();
+                mSerialPort.power_3v3on();
                 break;
             case ISerialPort.Power_5v:
-                mSerialport.power_5Von();
+                mSerialPort.power_5Von();
                 break;
             case ISerialPort.Power_Psam:
-                mSerialport.psam_poweron();
+                mSerialPort.psam_poweron();
                 break;
             case ISerialPort.Power_Rfid:
-                mSerialport.rfid_poweron();
+                mSerialPort.rfid_poweron();
                 break;
         }
-        mIn = mSerialport.getInputStream() ;
-        mOut = mSerialport.getOutputStream() ;
+        mIn = mSerialPort.getInputStream() ;
+        mOut = mSerialPort.getOutputStream() ;
         sleep(500) ;
         //clear useless data
-        byte[] temp = new byte[16] ;
+        byte[] temp = new byte[30] ;
         mIn.read(temp);
         readThread = new ReadThread();
         readThread.start();
@@ -224,7 +229,7 @@ public class LF134KManager {
     //弿始读卿  Lire Qing
     public void startRead(){
         startFlag = true ;
-        mSerialport.rfid_poweron() ;
+        mSerialPort.rfid_poweron() ;
 
     }
 
@@ -232,7 +237,7 @@ public class LF134KManager {
     public void stopRead(){
         Log.d(TAG, "stopRead: ");
         startFlag = false ;
-        mSerialport.rfid_poweroff() ;
+        mSerialPort.rfid_poweroff() ;
 
     }
 
@@ -249,25 +254,25 @@ public class LF134KManager {
             if(mIn != null){
                 mIn.close() ;
             }
-            if(mSerialport != null){
+            if(mSerialPort != null){
                 switch (Power) {
                     case SerialPort.Power_Scaner:
-                        mSerialport.scaner_poweroff();
+                        mSerialPort.scaner_poweroff();
                         break;
                     case SerialPort.Power_3v3:
-                        mSerialport.power_3v3off();
+                        mSerialPort.power_3v3off();
                         break;
                     case SerialPort.Power_5v:
-                        mSerialport.power_5Voff();
+                        mSerialPort.power_5Voff();
                         break;
                     case SerialPort.Power_Psam:
-                        mSerialport.psam_poweroff();
+                        mSerialPort.psam_poweroff();
                         break;
                     case SerialPort.Power_Rfid:
-                        mSerialport.rfid_poweroff();
+                        mSerialPort.rfid_poweroff();
                         break;
                 }
-                mSerialport.close(Port) ;
+                mSerialPort.close(Port) ;
                 Log.d(TAG, "Close port " + Port);
             }
         }catch(Exception e){

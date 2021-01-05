@@ -1,0 +1,70 @@
+package cn.pda.serialport;
+
+public interface ISerialPort {
+
+    java.io.InputStream getInputStream();
+    java.io.OutputStream getOutputStream();
+    void rfid_poweron();
+    void rfid_poweroff();
+    void psam_poweron();
+    void psam_poweroff() ;
+    void scaner_poweron();
+    void scaner_poweroff() ;
+    void power_3v3on();
+    void power_5Von();
+    void power_3v3off();
+    void power_5Voff();
+    void scaner_trigon() ;
+    //void rfidPoweron();
+    //void rfidPoweroff();
+    void close(int port);
+
+     final int Power_3v3 = 0;
+    int Power_5v = 1;
+    int Power_Scaner = 2;
+    int Power_Psam = 3;
+    int Power_Rfid = 4;
+    int com0 = 0;
+    int com1 = 1;
+    int com2 = 2;
+    int com3 = 3;
+    int com4 = 4;
+    int com5 = 5;
+    int com6 = 6;
+    int com7 = 7;
+    int com8 = 8;
+    int com9 = 9;
+    int com10 = 10;
+    int com11 = 11;
+    int com12 = 12;
+    int com13 = 13;
+    int com14 = 14;
+    int com15 = 15;
+    int com16 = 16;
+    int com17 = 17;
+    int com18 = 18;
+    int com19 = 19;
+    int com20 = 20;
+    int com21 = 21;
+    int com22 = 22;
+    int com23 = 23;
+    int com24 = 24;
+    int com25 = 25;
+    int com26 = 26;
+    public static final int com27 = 27;
+    public static final int com28 = 28;
+    public static final int com29 = 29;
+    public static final int baudrate1200 = 1200;
+    public static final int baudrate2400 = 2400;
+    public static final int baudrate4800 = 4800;
+    public static final int baudrate9600 = 9600;
+    public static final int baudrate14400 = 14400;
+    public static final int baudrate19200 = 19200;
+    public static final int baudrate38400 = 38400;
+    public static final int baudrate56000 = 56000;
+    public static final int baudrate57600 = 57600;
+    public static final int baudrate115200 = 115200;
+    public static final int baudrate128000 = 128000;
+    public static final int baudrate256000 = 256000;
+
+}

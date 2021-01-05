@@ -20,62 +20,11 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import android.util.Log;
 
 /*
  * SerialPort for open device power
  */
-public class SerialPort {
-	public static final int Power_3v3 = 0;
-	public static final int Power_5v = 1;
-	public static final int Power_Scaner = 2;
-	public static final int Power_Psam = 3;
-	public static final int Power_Rfid = 4;
-	public static final int com0 = 0;
-	public static final int com1 = 1;
-	public static final int com2 = 2;
-	public static final int com3 = 3;
-	public static final int com4 = 4;
-	public static final int com5 = 5;
-	public static final int com6 = 6;
-	public static final int com7 = 7;
-	public static final int com8 = 8;
-	public static final int com9 = 9;
-	public static final int com10 = 10;
-	public static final int com11 = 11;
-	public static final int com12 = 12;
-	public static final int com13 = 13;
-	public static final int com14 = 14;
-	public static final int com15 = 15;
-	public static final int com16 = 16;
-	public static final int com17 = 17;
-	public static final int com18 = 18;
-	public static final int com19 = 19;
-	public static final int com20 = 20;
-	public static final int com21 = 21;
-	public static final int com22 = 22;
-	public static final int com23 = 23;
-	public static final int com24 = 24;
-	public static final int com25 = 25;
-	public static final int com26 = 26;
-	public static final int com27 = 27;
-	public static final int com28 = 28;
-	public static final int com29 = 29;
-	public static final int baudrate1200 = 1200;
-	public static final int baudrate2400 = 2400;
-	public static final int baudrate4800 = 4800;
-	public static final int baudrate9600 = 9600;
-	public static final int baudrate14400 = 14400;
-	public static final int baudrate19200 = 19200;
-	public static final int baudrate38400 = 38400;
-	public static final int baudrate56000 = 56000;
-	public static final int baudrate57600 = 57600;
-	public static final int baudrate115200 = 115200;
-	public static final int baudrate128000 = 128000;
-	public static final int baudrate256000 = 256000;
+public class SerialPort implements ISerialPort {
 	private static final String TAG = "SerialPort";
 	
 	
@@ -104,18 +53,18 @@ public class SerialPort {
 //		System.load("/data/data/com.example.uartdemo/lib/libSerialPort.so");
 		mFd = open(port, baudrate);
 		if (mFd == null) {
-			Log.e(TAG, "native open returns null");
+			android.util.Log.e(TAG, "native open returns null");
 			throw new IOException();
 		}
 		mFileInputStream = new FileInputStream(mFd);
 		mFileOutputStream = new FileOutputStream(mFd);
 	}
 	// Getters and setters
-	public InputStream getInputStream() {
+	public java.io.InputStream getInputStream() {
 		return mFileInputStream;
 	}
 
-	public OutputStream getOutputStream() {
+	public java.io.OutputStream getOutputStream() {
 		return mFileOutputStream;
 	}
 	public void power_5Von() {
